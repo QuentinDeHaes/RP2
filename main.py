@@ -20,10 +20,6 @@ df_train = df_train[["user_session", "product_id", "event_type"]]
 
 df_train = df_train.head(int(len(df_train.index)/4))
 
-# dl_train = DataLoader('./data/data.csv')
-# df_train = dl_train.get_df()
-# df_train["product_id"] = df_train["Description"]
-# df_train["user_session"] = df_train["CustomerID"]
 
 
 
