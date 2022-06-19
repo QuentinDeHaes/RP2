@@ -1,3 +1,8 @@
+
+# a secondary main file to acquire itemsets that can be turned into  actual items for human interpretation
+# (uses the dataset from the kaggle H&M contest)
+
+
 from eclat.Data_Loader import DataLoader
 from eclat.Eclat import new_generate_tidlists, True_Eclat, clean_maximal,True_Eclat_maximal, apriori
 from eclat.main import generate_rules
@@ -10,10 +15,15 @@ from distance_funcs import cosine_distance, jaccard_distance, pointwise_mutual_i
 from similarity_generation import expand_items_redone, expand_items2_redone, get_similarity_items, expand_items_void
 import pickle
 from eclat.popularity import get_popularity_rec
-#
-dl = DataLoader('./project_antwerp/RP2/data/test.csv')
+
+
+
+
+
+
+dl = DataLoader('./data/test.csv')
 df = dl.get_df()
-dl_train = DataLoader('./project_antwerp/RP2/transactions_train.csv')
+dl_train = DataLoader('./transactions_train.csv')
 df_train = dl_train.get_df()
 df_train["user_session"] = df_train["customer_id"] + df_train["t_dat"]
 df_train["product_id"] = df_train["article_id"]
@@ -21,12 +31,6 @@ df_train = df_train[["user_session", "product_id"]]
 #
 
 df_train = df_train.head(int(len(df_train.index)/8))
-
-# dl_train = DataLoader('./data/data.csv')
-# df_train = dl_train.get_df()
-# df_train["product_id"] = df_train["Description"]
-# df_train["user_session"] = df_train["CustomerID"]
-
 
 
 df_train.dropna(inplace=True)
@@ -77,7 +81,7 @@ def get_tids_dict(df, eclat_minsup=500, filename=None):
     new_d = {str(key): str(len(value)) for key, value in dict_full.items()}
 
     if filename is not None:
-        f = open('./project_antwerp/RP2/temp/HM/' +filename, 'w')
+        f = open('./temp/HM/' +filename, 'w')
         f.write(json.dumps(new_d))
         f.close()
 
@@ -92,7 +96,7 @@ def alter_Codes(dct, file):
     :return: return stringified dict
     """
     if type(file)==str:
-        f = open('./project_antwerp/RP2/temp/HM/' + file ,  'r')
+        f = open('./temp/HM/' + file ,  'r')
         file = json.loads(f.read())
         
     new_dct = dict()
@@ -114,7 +118,7 @@ def get_idtoname_dict():
     generate a dictionary that goes from product_id -> product_name
     :return: a dictionary product_id -> product_name
     """
-    dl = DataLoader('./project_antwerp/RP2/articles.csv')
+    dl = DataLoader('./articles.csv')
     df = dl.get_df()
     # print(df.head())
     
@@ -136,10 +140,10 @@ def generate_rules_file(df, eclat_minsup, min_conf, output):
     :param output: location to store the rules
     :return: the recommendation rules
     """
-    f = open('./project_antwerp/RP2/temp/'+output+'.txt',"w")
+    f = open('./temp/'+output+'.txt',"w")
     res = generate_rules(df, eclat_minsup, min_conf, f, ["product_id"], clean=(False, [0], True))
     f.close()
-    res.to_pickle('./project_antwerp/RP2/temp/HM/'+output+'.pkl')
+    res.to_pickle('./temp/HM/'+output+'.pkl')
 
     return res
 
@@ -153,7 +157,7 @@ def get_hr(df, rules, pop_rec,df_gt ,simm):
     :param simm: a string used to specify were to store information + how to specify this HR in the console
     :return:
     """
-    csv = open('./project_antwerp/RP2/temp/HM/rules_{}.csv'.format(simm),'w')
+    csv = open('./temp/HM/rules_{}.csv'.format(simm),'w')
     hr10 = get_rec_csv(df, csv,rules, pop_rec, False, False, None)
 
 
@@ -168,13 +172,13 @@ def get_hr(df, rules, pop_rec,df_gt ,simm):
 
 
 def main_HM():
-#     print("start cosine")
+    print("start cosine")
 
-#     sim_dict = get_similarity_items(df_train, 5, cosine_distance)
-#     f = open("/project_antwerp/RP2/temp/HM/cosine_simdict.pkl", "wb")
-#     pickle.dump(sim_dict, f)
-#     f.close()
-# #     # f = open("./project_antwerp/RP2/temp/HM/cosine_simdict.pkl", "rb")
+    sim_dict = get_similarity_items(df_train, 5, cosine_distance)
+    f = open("/project_antwerp/RP2/temp/HM/cosine_simdict.pkl", "wb")
+    pickle.dump(sim_dict, f)
+    f.close()
+# #     # f = open("./temp/HM/cosine_simdict.pkl", "rb")
 # #     # sim_dict = pickle.load(f)
 # #     # f.close()
 #     df2 = expand_items_redone(df_train, sim_dict, 5)
@@ -184,16 +188,16 @@ def main_HM():
 #     get_tids_dict(df2, filename="result_add_cosine.json", eclat_minsup=2400)
     dct = get_idtoname_dict()
     result = alter_Codes(dct,"result_replace_cosine.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_replace_cosine_word_desc.json" )
+    write_to_file(result, "./temp/HM/result_replace_cosine_word_desc.json" )
     result = alter_Codes(dct,"result_add_cosine.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_add_cosine_word_desc.json" )
+    write_to_file(result, "./temp/HM/result_add_cosine_word_desc.json" )
 #     print("start jaccard")
 #     sim_dict = get_similarity_items(df_train, 5, jaccard_distance)
-#     f = open("./project_antwerp/RP2/temp/HM/jaccard_simdict.pkl", "wb")
+#     f = open("./temp/HM/jaccard_simdict.pkl", "wb")
 #     pickle.dump(sim_dict, f)
 #     f.close()
 
-#     # f = open("./project_antwerp/RP2/temp/HM/jaccard_simdict.pkl", "rb")
+#     # f = open("./temp/HM/jaccard_simdict.pkl", "rb")
 #     # sim_dict = pickle.load(f)
 #     # f.close()
 
@@ -202,20 +206,20 @@ def main_HM():
 #     df2 = expand_items2_redone(df_train, sim_dict, 5)
 #     get_tids_dict(df2, filename="result_add_jaccard.json", eclat_minsup=2400)
 
-    result = alter_Codes(dct,"result_replace_jaccard.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_replace_jaccard_word_desc.json" )
-    result = alter_Codes(dct,"result_add_jaccard.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_add_jaccard_word_desc.json" )
+    # result = alter_Codes(dct,"result_replace_jaccard.json")
+    # write_to_file(result, "./temp/HM/result_replace_jaccard_word_desc.json" )
+    # result = alter_Codes(dct,"result_add_jaccard.json")
+    # write_to_file(result, "./temp/HM/result_add_jaccard_word_desc.json" )
 
     
 #     print("start conditional")
 
 #     sim_dict = get_similarity_items(df_train, 5, conditional_probability)
-#     f = open("./project_antwerp/RP2/temp/HM/conditional_simdict.pkl", "wb")
+#     f = open("./temp/HM/conditional_simdict.pkl", "wb")
 #     pickle.dump(sim_dict, f)
 #     f.close()
 
-#     # f = open("./project_antwerp/RP2/temp/HM/conditional_simdict.pkl", "rb")
+#     # f = open("./temp/HM/conditional_simdict.pkl", "rb")
 #     # sim_dict = pickle.load(f)
 #     # f.close()
 
@@ -227,7 +231,11 @@ def main_HM():
 #     # conditional_add = get_tids_dict(df3, filename="result_add_conditional.json", eclat_minsup=1000)
 
 
-    result = alter_Codes(dct,"result_replace_conditional.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_replace_conditional_word_desc.json" )
-    result = alter_Codes(dct,"result_add_conditional.json")
-    write_to_file(result, "./project_antwerp/RP2/temp/HM/result_add_conditional_word_desc.json" )
+    # result = alter_Codes(dct,"result_replace_conditional.json")
+    # write_to_file(result, "./temp/HM/result_replace_conditional_word_desc.json" )
+    # result = alter_Codes(dct,"result_add_conditional.json")
+    # write_to_file(result, "./temp/HM/result_add_conditional_word_desc.json" )
+
+
+if __name__ == "__main__":
+    main_HM()
